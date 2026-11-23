@@ -1,0 +1,38 @@
+CARA PAKAI (XAMPP / Laragon / hosting PHP 8+)
+1. Salin folder "tokoku" ke htdocs (XAMPP) atau www (Laragon).
+2. Impor db_tokoku.sql lewat phpMyAdmin (tab Import).
+3. Cek config.php (DB_USER/DB_PASS). Bawaan XAMPP: root, tanpa kata sandi.
+4. Buka http://localhost/tokoku/
+5. Staf: http://localhost/tokoku/admin/login.php (admin pertama dibuat di halaman itu).
+
+KONFIRMASI PEMBAYARAN
+- Database baru: impor db_tokoku.sql seperti biasa.
+- Database yang sudah digunakan: jalankan sekali di phpMyAdmin:
+  ALTER TABLE tbl_pesanan
+    ADD status_pembayaran VARCHAR(30) NOT NULL DEFAULT 'Belum dibayar',
+    ADD bukti_pembayaran VARCHAR(40) NULL;
+  UPDATE tbl_pesanan SET status_pembayaran='Tidak perlu konfirmasi'
+    WHERE metode_pembayaran='COD';
+- Pelanggan mengunggah bukti JPG, PNG, atau WebP dari halaman Pesanan saya.
+  Staf memeriksa bukti dan mengubah status konfirmasi pada panel Pesanan.
+- Untuk QRIS, pelanggan memindai QR toko lalu mengunggah bukti pembayaran di halaman Pesanan saya.
+- Gambar QRIS merchant disimpan di `assets/qris.jpg` dan ditampilkan pada pesanan QRIS yang belum dibayar. Pelanggan membayar sesuai total pesanan lalu mengunggah bukti pembayaran.
+
+KODE PRODUK & BARCODE
+- Setiap produk mendapat kode otomatis `PRD` diikuti nomor produk, misalnya `PRD000001`.
+- Kode dapat diganti dengan nomor barcode produk lewat menu staf > Produk. Kode/barcode unik dan dicari lewat kolom pencarian toko; scanner barcode yang mengirim hasil sebagai teks lalu Enter dapat langsung mencari produk.
+- Database yang sudah digunakan: jalankan sekali di phpMyAdmin:
+  ALTER TABLE tbl_produk ADD kode_produk VARCHAR(64) NULL UNIQUE;
+  UPDATE tbl_produk SET kode_produk=CONCAT('PRD',LPAD(id_produk,6,'0')) WHERE kode_produk IS NULL;
+
+FOTO PRODUK
+- Staf dapat mengunggah foto JPG, PNG, atau WebP (maks. 5 MB) saat menambah
+  atau mengubah produk di menu Produk. Foto yang diunggah menggantikan URL gambar.
+- Folder uploads/produk harus dapat ditulisi oleh PHP. Foto tersimpan di folder
+  tersebut dan tampil pada daftar serta halaman detail produk.
+
+CETAK STRUK
+- Pelanggan dapat mencetak struk dari halaman Pesanan saya.
+- Staf dapat mencetak struk pesanan dari tabel Pesanan di panel staf.
+- Halaman struk menyediakan tombol Cetak struk dan tata letak cetak thermal 80 mm.
+- Struk mencetak barcode Code 39 dari kode pesanan. Saat barcode dipindai di panel Pesanan, detail struk transaksi yang cocok akan terbuka langsung.
